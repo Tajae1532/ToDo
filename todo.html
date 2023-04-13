@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Todo List</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style>
+		body {
+			font-family: sans-serif;
+			background-color: #f0f0f0; /* Light gray background color */
+		}
+		h1 {
+			text-align: center;
+		}
+		form {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			margin-top: 20px;
+		}
+		input[type="text"], select, input[type="submit"] {
+			padding: 10px;
+			border: none;
+			border-radius: 5px;
+			margin-bottom: 10px;
+			font-size: 18px;
+			width: 100%;
+			max-width: 400px;
+			box-sizing: border-box;
+		}
+		input[type="submit"] {
+			background-color: #4CAF50;
+			color: white;
+			cursor: pointer;
+		}
+		input[type="submit"]:hover {
+			background-color: #3e8e41;
+		}
+		table {
+			border-collapse: collapse;
+			width: 100%;
+			max-width: 800px;
+			margin: 0 auto;
+		}
+		th {
+			background-color: #4CAF50;
+			color: white;
+			padding: 8px;
+		}
+		td {
+			text-align: left;
+			padding: 8px;
+			border-bottom: 1px solid #ddd;
+		}
+		tr:hover {
+			background-color: #f5f5f5;
+		}
+		.delete-btn {
+			background-color: #f44336;
+			color: white;
+			border: none;
+			padding: 8px;
+			border-radius: 5px;
+			cursor: pointer;
+		}
+		.delete-btn:hover {
+			background-color: #da190b;
+		}
+		.edit-btn {
+			background-color: #008CBA;
+			color: white;
+			border: none;
+			padding: 8px;
+			border-radius: 5px;
+			cursor: pointer;
+		}
+		.edit-btn:hover {
+			background-color: #006080;
+		}
+		.completed {
+			text-decoration: line-through;
+			color: #999;
+		}
+		.not-completed {
+			color: #f44336;
+		}
+		.priority-1 {
+			background-color: #ff5722;
+			color: #fff;
+			padding: 5px;
+			border-radius: 5px;
+		}
+		.priority-2 {
+			background-color: #ffeb3b;
+			color: #333;
+			padding: 5px;
+			border-radius: 5px;
+		}
+		.priority-3 {
+			background-color: #8bc34a;
+			color: #333;
+			padding: 5px;
+			border-radius: 5px;
+		}
+	</style>
+</head>
+<body>
+	<h1>Todo List</h1>
+	<form id="task-form">
+		<label for="task">Task:</label>
+		<input type="text" id="task" name="task" required>
+		<label for="description">Description:</label>
+		<input type="text" id="description" name="description" required>
+		<label for="due-date">Due Date:</label>
+		<input type="date" id="due-date" name="due-date" required>
+		<label for="priority">Priority:</label>
+		<select id="priority" name="priority" required>
+			<option value="" disabled selected>Select priority</option>
+			<option value="1">High</option>
+			<option value="2">Medium</option>
+			<option value="3">Low</option>
+		</select>
+		<input type="submit" value="Add Task">
+	</form>
+	<table id="task-list">
+		<thead>
+			<tr>
+				<th>Title</th>
+				<th>Description</th>
+				<th>Due Date</th>
+				<th>Priority</th>
+				<th>Status</th>
+				<th>Actions</th>
+			</tr>
+		</thead>
+		<tbody>
+		</tbody>
+	</table>
+	<script>
+		// Initialize task list array
+		let tasks = [];
+
+		// Get form element and add event listener
+		const form = document.querySelector('#task-form');
+		form.addEventListener('submit', addTask);
+
+		// Add task function
+		function addTask(e) {
+			e.preventDefault();
+
+			// Get form data and create new task object
+			const task = {
+				title: document.querySelector('#task').value,
+				description: document.querySelector('#description').value,
+				dueDate: document.querySelector('#due-date').value,
+				priority: document.querySelector('#priority').value,
+				completed: false
+			};
+
+			// Add task object to tasks array
+			tasks.push(task);
+
+			// Clear form inputs
+			document.querySelector('#task').value = '';
+			document.querySelector('#description').value = '';
+			document.querySelector('#due-date').value = '';
+			document.querySelector('#priority').selectedIndex = 0;
+
+			// Refresh task list
+			displayTasks();
+		}
+
+		// Display tasks function
+		function displayTasks() {
+			const tableBody = document.querySelector('#task-list tbody');
+			tableBody.innerHTML = '';
+
+			// Loop through tasks array and create table rows for each task
+			tasks.forEach(function(task, index) {
+				const row = tableBody.insertRow();
+
+				// Add task data to table cells
+				const titleCell = row.insertCell();
+				titleCell.textContent = task.title;
+
+				const descriptionCell = row.insertCell();
+				descriptionCell.textContent = task.description;
+
+				const dueDateCell = row.insertCell();
+				dueDateCell.textContent = task.dueDate;
+
+				const priorityCell = row.insertCell();
+				priorityCell.textContent = task.priority;
+				priorityCell.classList.add('priority-' + task.priority);
+
+				const statusCell = row.insertCell();
+				if (task.completed) {
+					statusCell.innerHTML = '<span class="completed">Completed</span>';
+				} else {
+					statusCell.innerHTML = '<span class="not-completed">Not Completed</span>';
+				}
+
+				const actionsCell = row.insertCell();
+				const deleteBtn = document.createElement('button');
+				deleteBtn.textContent = 'Delete';
+				deleteBtn.classList.add('delete-btn');
+				deleteBtn.addEventListener('click', function() {
+					deleteTask(index);
+				});
+				actionsCell.appendChild(deleteBtn);
+
+				const editBtn = document.createElement('button');
+				editBtn.textContent = 'Edit';
+				editBtn.classList.add('edit-btn');
+				editBtn.addEventListener('click', function() {
+					editTask(index);
+				});
+				actionsCell.appendChild(editBtn);
+			});
+		}
+
+		// Delete task function
+		// Edit task function
+function editTask(index) {
+	// Get task object from tasks array
+	const task = tasks[index];
+
+	// Populate form inputs with task data
+	document.querySelector('#task').value = task.title;
+	document.querySelector('#description').value = task.description;
+	document.querySelector('#due-date').value = task.dueDate;
+	document.querySelector('#priority').value = task.priority;
+
+	// Remove task object from tasks array
+	tasks.splice(index, 1);
+
+	// Refresh task list
+	displayTasks();
+}
+
+// Set up event listeners for task completion and editing
+const taskList = document.querySelector('#task-list tbody');
+taskList.addEventListener('click', function(e) {
+	if (e.target.tagName === 'SPAN') {
+		// Toggle task completion status
+		const index = e.target.parentNode.parentNode.rowIndex - 1;
+		tasks[index].completed = !tasks[index].completed;
+		displayTasks();
+	} else if (e.target.tagName === 'BUTTON') {
+		// Do nothing
+	} else {
+		// Edit task
+		const index = e.target.parentNode.rowIndex - 1;
+		editTask(index);
+	}
+});
+
+// Initialize task list on page load
+displayTasks();
+
+	</script>
+</body>
+</html>
